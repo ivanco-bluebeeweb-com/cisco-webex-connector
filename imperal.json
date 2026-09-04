@@ -1,0 +1,814 @@
+{
+  "manifest_schema_version": 3,
+  "sdk_version": "5.13.1",
+  "app_id": "cisco-webex-connector",
+  "version": "0.1.0",
+  "name": "Cisco Webex",
+  "description": "Comprehensive Cisco Webex connector: schedule/manage meetings, messaging spaces/rooms, message posting, recordings, and health audits via Webex API.",
+  "icon": "icon.svg",
+  "actions_explicit": true,
+  "system": false,
+  "capabilities": [
+    "webex:manage"
+  ],
+  "tools": [
+    {
+      "name": "connect_webex",
+      "description": "Connect your own Cisco Webex account by saving your Bearer Access Token.",
+      "action_type": "write",
+      "chain_callable": true,
+      "effects": [
+        "create:connection"
+      ],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "label": {
+            "default": "",
+            "description": "Friendly connection label, e.g. Acme Webex.",
+            "title": "Label",
+            "type": "string"
+          },
+          "access_token": {
+            "description": "Webex Integration / Bot Bearer Access Token.",
+            "title": "Access Token",
+            "type": "string"
+          }
+        },
+        "required": [
+          "access_token"
+        ],
+        "title": "ConnectWebexParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "properties": {
+          "label": {
+            "default": "",
+            "description": "Friendly connection label, e.g. Acme Webex.",
+            "title": "Label",
+            "type": "string"
+          },
+          "access_token": {
+            "description": "Webex Integration / Bot Bearer Access Token.",
+            "title": "Access Token",
+            "type": "string"
+          }
+        },
+        "required": [
+          "access_token"
+        ],
+        "title": "ConnectWebexParams",
+        "type": "object"
+      },
+      "event": "cisco-webex-connector.connect_webex",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "tool_cisco-webex-connector_chat"
+    },
+    {
+      "name": "list_connections",
+      "description": "List connected Cisco Webex accounts without exposing credentials.",
+      "action_type": "read",
+      "chain_callable": true,
+      "effects": [],
+      "id_projection": "",
+      "params_schema": {
+        "description": "Empty parameter model.",
+        "properties": {},
+        "title": "NoParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "description": "Empty parameter model.",
+        "properties": {},
+        "title": "NoParams",
+        "type": "object"
+      },
+      "event": "",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "tool_cisco-webex-connector_chat"
+    },
+    {
+      "name": "disconnect_webex",
+      "description": "Disconnect a Cisco Webex account and remove stored credentials.",
+      "action_type": "write",
+      "chain_callable": true,
+      "effects": [
+        "delete:connection"
+      ],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "connection_id": {
+            "description": "Connection ID to remove.",
+            "title": "Connection Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "connection_id"
+        ],
+        "title": "DisconnectWebexParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "properties": {
+          "connection_id": {
+            "description": "Connection ID to remove.",
+            "title": "Connection Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "connection_id"
+        ],
+        "title": "DisconnectWebexParams",
+        "type": "object"
+      },
+      "event": "cisco-webex-connector.disconnect_webex",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "tool_cisco-webex-connector_chat"
+    },
+    {
+      "name": "list_meetings",
+      "description": "List Webex meetings with optional state filter.",
+      "action_type": "read",
+      "chain_callable": true,
+      "effects": [],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "connection_id": {
+            "default": "",
+            "description": "Optional connection ID.",
+            "title": "Connection Id",
+            "type": "string"
+          },
+          "state": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": "active",
+            "description": "Filter state: active, scheduled, ready, ended.",
+            "title": "State"
+          },
+          "max_results": {
+            "default": 50,
+            "description": "Max meetings to return (1-100).",
+            "title": "Max Results",
+            "type": "integer"
+          }
+        },
+        "title": "ListMeetingsParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "properties": {
+          "connection_id": {
+            "default": "",
+            "description": "Optional connection ID.",
+            "title": "Connection Id",
+            "type": "string"
+          },
+          "state": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": "active",
+            "description": "Filter state: active, scheduled, ready, ended.",
+            "title": "State"
+          },
+          "max_results": {
+            "default": 50,
+            "description": "Max meetings to return (1-100).",
+            "title": "Max Results",
+            "type": "integer"
+          }
+        },
+        "title": "ListMeetingsParams",
+        "type": "object"
+      },
+      "event": "",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "tool_cisco-webex-connector_chat"
+    },
+    {
+      "name": "get_meeting",
+      "description": "Get details of a specific Webex meeting by ID.",
+      "action_type": "read",
+      "chain_callable": true,
+      "effects": [],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "meeting_id": {
+            "description": "Unique Webex Meeting ID.",
+            "title": "Meeting Id",
+            "type": "string"
+          },
+          "connection_id": {
+            "default": "",
+            "description": "Optional connection ID.",
+            "title": "Connection Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "meeting_id"
+        ],
+        "title": "GetMeetingParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "properties": {
+          "meeting_id": {
+            "description": "Unique Webex Meeting ID.",
+            "title": "Meeting Id",
+            "type": "string"
+          },
+          "connection_id": {
+            "default": "",
+            "description": "Optional connection ID.",
+            "title": "Connection Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "meeting_id"
+        ],
+        "title": "GetMeetingParams",
+        "type": "object"
+      },
+      "event": "",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "tool_cisco-webex-connector_chat"
+    },
+    {
+      "name": "create_meeting",
+      "description": "Schedule a new Webex meeting.",
+      "action_type": "write",
+      "chain_callable": true,
+      "effects": [],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "title": {
+            "description": "Meeting title/topic.",
+            "title": "Title",
+            "type": "string"
+          },
+          "start": {
+            "description": "Meeting start time (ISO 8601 UTC string, e.g. 2026-09-04T10:00:00Z).",
+            "title": "Start",
+            "type": "string"
+          },
+          "end": {
+            "description": "Meeting end time (ISO 8601 UTC string, e.g. 2026-09-04T11:00:00Z).",
+            "title": "End",
+            "type": "string"
+          },
+          "password": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Optional meeting password.",
+            "title": "Password"
+          },
+          "invitees": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "List of participant email addresses.",
+            "title": "Invitees"
+          },
+          "connection_id": {
+            "default": "",
+            "description": "Optional connection ID.",
+            "title": "Connection Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "start",
+          "end"
+        ],
+        "title": "CreateMeetingParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "properties": {
+          "title": {
+            "description": "Meeting title/topic.",
+            "title": "Title",
+            "type": "string"
+          },
+          "start": {
+            "description": "Meeting start time (ISO 8601 UTC string, e.g. 2026-09-04T10:00:00Z).",
+            "title": "Start",
+            "type": "string"
+          },
+          "end": {
+            "description": "Meeting end time (ISO 8601 UTC string, e.g. 2026-09-04T11:00:00Z).",
+            "title": "End",
+            "type": "string"
+          },
+          "password": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Optional meeting password.",
+            "title": "Password"
+          },
+          "invitees": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "List of participant email addresses.",
+            "title": "Invitees"
+          },
+          "connection_id": {
+            "default": "",
+            "description": "Optional connection ID.",
+            "title": "Connection Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "start",
+          "end"
+        ],
+        "title": "CreateMeetingParams",
+        "type": "object"
+      },
+      "event": "",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "tool_cisco-webex-connector_chat"
+    },
+    {
+      "name": "delete_meeting",
+      "description": "Delete/cancel a scheduled Webex meeting.",
+      "action_type": "write",
+      "chain_callable": true,
+      "effects": [],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "meeting_id": {
+            "description": "Unique Webex Meeting ID.",
+            "title": "Meeting Id",
+            "type": "string"
+          },
+          "connection_id": {
+            "default": "",
+            "description": "Optional connection ID.",
+            "title": "Connection Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "meeting_id"
+        ],
+        "title": "DeleteMeetingParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "properties": {
+          "meeting_id": {
+            "description": "Unique Webex Meeting ID.",
+            "title": "Meeting Id",
+            "type": "string"
+          },
+          "connection_id": {
+            "default": "",
+            "description": "Optional connection ID.",
+            "title": "Connection Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "meeting_id"
+        ],
+        "title": "DeleteMeetingParams",
+        "type": "object"
+      },
+      "event": "",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "tool_cisco-webex-connector_chat"
+    },
+    {
+      "name": "list_rooms",
+      "description": "List Webex spaces/rooms with optional type filter.",
+      "action_type": "read",
+      "chain_callable": true,
+      "effects": [],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "connection_id": {
+            "default": "",
+            "description": "Optional connection ID.",
+            "title": "Connection Id",
+            "type": "string"
+          },
+          "room_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "direct or group.",
+            "title": "Room Type"
+          },
+          "max_results": {
+            "default": 50,
+            "description": "Max rooms to return.",
+            "title": "Max Results",
+            "type": "integer"
+          }
+        },
+        "title": "ListRoomsParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "properties": {
+          "connection_id": {
+            "default": "",
+            "description": "Optional connection ID.",
+            "title": "Connection Id",
+            "type": "string"
+          },
+          "room_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "direct or group.",
+            "title": "Room Type"
+          },
+          "max_results": {
+            "default": 50,
+            "description": "Max rooms to return.",
+            "title": "Max Results",
+            "type": "integer"
+          }
+        },
+        "title": "ListRoomsParams",
+        "type": "object"
+      },
+      "event": "",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "tool_cisco-webex-connector_chat"
+    },
+    {
+      "name": "create_room",
+      "description": "Create a new Webex space/room.",
+      "action_type": "write",
+      "chain_callable": true,
+      "effects": [],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "title": {
+            "description": "Space/Room title.",
+            "title": "Title",
+            "type": "string"
+          },
+          "connection_id": {
+            "default": "",
+            "description": "Optional connection ID.",
+            "title": "Connection Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "title"
+        ],
+        "title": "CreateRoomParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "properties": {
+          "title": {
+            "description": "Space/Room title.",
+            "title": "Title",
+            "type": "string"
+          },
+          "connection_id": {
+            "default": "",
+            "description": "Optional connection ID.",
+            "title": "Connection Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "title"
+        ],
+        "title": "CreateRoomParams",
+        "type": "object"
+      },
+      "event": "",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "tool_cisco-webex-connector_chat"
+    },
+    {
+      "name": "post_message",
+      "description": "Post a message to a Webex space/room.",
+      "action_type": "write",
+      "chain_callable": true,
+      "effects": [],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "room_id": {
+            "description": "Room/Space ID.",
+            "title": "Room Id",
+            "type": "string"
+          },
+          "text": {
+            "description": "Plain text message content.",
+            "title": "Text",
+            "type": "string"
+          },
+          "markdown": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Optional markdown formatted message.",
+            "title": "Markdown"
+          },
+          "connection_id": {
+            "default": "",
+            "description": "Optional connection ID.",
+            "title": "Connection Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "room_id",
+          "text"
+        ],
+        "title": "PostMessageParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "properties": {
+          "room_id": {
+            "description": "Room/Space ID.",
+            "title": "Room Id",
+            "type": "string"
+          },
+          "text": {
+            "description": "Plain text message content.",
+            "title": "Text",
+            "type": "string"
+          },
+          "markdown": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Optional markdown formatted message.",
+            "title": "Markdown"
+          },
+          "connection_id": {
+            "default": "",
+            "description": "Optional connection ID.",
+            "title": "Connection Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "room_id",
+          "text"
+        ],
+        "title": "PostMessageParams",
+        "type": "object"
+      },
+      "event": "",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "tool_cisco-webex-connector_chat"
+    },
+    {
+      "name": "list_recordings",
+      "description": "List Webex meeting recordings.",
+      "action_type": "read",
+      "chain_callable": true,
+      "effects": [],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "connection_id": {
+            "default": "",
+            "description": "Optional connection ID.",
+            "title": "Connection Id",
+            "type": "string"
+          },
+          "max_results": {
+            "default": 50,
+            "description": "Max recordings to return.",
+            "title": "Max Results",
+            "type": "integer"
+          }
+        },
+        "title": "ListRecordingsParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "properties": {
+          "connection_id": {
+            "default": "",
+            "description": "Optional connection ID.",
+            "title": "Connection Id",
+            "type": "string"
+          },
+          "max_results": {
+            "default": 50,
+            "description": "Max recordings to return.",
+            "title": "Max Results",
+            "type": "integer"
+          }
+        },
+        "title": "ListRecordingsParams",
+        "type": "object"
+      },
+      "event": "",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "tool_cisco-webex-connector_chat"
+    },
+    {
+      "name": "audit_webex_health",
+      "description": "Audit Cisco Webex connectivity and account status.",
+      "action_type": "read",
+      "chain_callable": true,
+      "effects": [],
+      "id_projection": "",
+      "params_schema": {
+        "properties": {
+          "connection_id": {
+            "default": "",
+            "description": "Optional connection ID.",
+            "title": "Connection Id",
+            "type": "string"
+          }
+        },
+        "title": "AuditHealthParams",
+        "type": "object"
+      },
+      "return_schema": {
+        "properties": {
+          "connection_id": {
+            "default": "",
+            "description": "Optional connection ID.",
+            "title": "Connection Id",
+            "type": "string"
+          }
+        },
+        "title": "AuditHealthParams",
+        "type": "object"
+      },
+      "event": "",
+      "background": false,
+      "long_running": false,
+      "scopes": [],
+      "owner_chat_tool": "tool_cisco-webex-connector_chat"
+    }
+  ],
+  "signals": [],
+  "schedules": [],
+  "required_scopes": [],
+  "icon_size_bytes": 308,
+  "lifecycle": {
+    "health_check": {
+      "interval_sec": 60
+    }
+  },
+  "panels": [
+    {
+      "panel_id": "cisco_webex_sidebar",
+      "slot": "left",
+      "title": "",
+      "tree": {},
+      "icon": "",
+      "refresh": "manual",
+      "center_overlay": false
+    },
+    {
+      "panel_id": "__cisco_webex_settings",
+      "slot": "center",
+      "title": "",
+      "tree": {},
+      "icon": "",
+      "refresh": "manual",
+      "center_overlay": false
+    }
+  ],
+  "pricing": {
+    "model": "per_action",
+    "currency": "tokens",
+    "monthly_price": 0,
+    "revenue_split_dev": 70,
+    "free_tools": [
+      "connect_webex",
+      "list_connections",
+      "disconnect_webex"
+    ],
+    "tool_prices": {
+      "connect_webex": 0,
+      "list_connections": 0,
+      "disconnect_webex": 0,
+      "audit_webex_health": 40,
+      "list_meetings": 8,
+      "get_meeting": 8,
+      "create_meeting": 16,
+      "delete_meeting": 16,
+      "list_rooms": 8,
+      "create_room": 16,
+      "post_message": 8,
+      "list_recordings": 8
+    }
+  }
+}
