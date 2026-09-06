@@ -1,4 +1,4 @@
-"""Panel UI for Cisco Webex Connector following UI_INTERFACE_STANDARD.md."""
+"""Panel UI for Cisco Webex Connector following UI_INTERFACE_STANDARD.md and AUTH_AND_CREDENTIALS_STANDARD.md."""
 from __future__ import annotations
 from imperal_sdk import ui
 from app import ext
@@ -19,51 +19,94 @@ def _help_modal() -> ui.UINode:
         title="Connecting Cisco Webex",
         children=[
             ui.Text(
-                "1. Log in to Webex for Developers (developer.webex.com).\n"
-                "2. Create a Bot or Integration to obtain your Bearer Access Token.\n"
-                "3. Paste your token below and click Connect Webex.",
+                "1. Sign in to your Cisco Webex account and navigate to API/Integration or OAuth settings.\n2. Choose your preferred authentication method (OAuth SSO, API Key / Personal Token, or Client Credentials / Service Account).\n3. Authorize or enter your credentials above and click Connect.",
                 variant="body"
             )
         ]
     )
 
 @ext.panel("cisco_webex_sidebar", slot="left")
-async def webex_sidebar(ctx, **kwargs) -> ui.UINode:
-    connections = await h._load_connections(ctx)
-    conn_items = [
-        ui.Text(c.get("label") or "Webex Account", variant="body")
-        for c in connections
-    ] if connections else [ui.Text("No Cisco Webex accounts connected yet.", variant="caption")]
-
+async def cisco_webex_sidebar(ctx, **kwargs) -> ui.UINode:
     return ui.Stack(
         direction="v",
         gap=3,
+        align="stretch",
         children=[
             ui.Text("Cisco Webex", variant="heading"),
-            ui.Stack(direction="v", gap=1, children=conn_items),
-            ui.Divider(),
-            ui.Form(
-                submit_label="Connect Webex",
-                action=ui.Call("connect_webex"),
+            ui.Stack(
+                direction="v",
+                gap=1,
+                align="stretch",
                 children=[
-                    ui.Stack(
-                        direction="v",
-                        gap=2,
-                        children=[
-                            ui.Input(
-                                param_name="label",
-                                placeholder="Connection label (e.g. Acme Webex)"
-                            ),
-                            ui.Input(
-                                param_name="access_token",
-                                placeholder="Bearer Access Token"
-                            )
-                        ]
-                    )
+                    ui.Text("Manage your Cisco Webex connections and integrations.", variant="caption"),
                 ]
             ),
             ui.Divider(),
+            ui.Stack(
+                direction="v",
+                gap=2,
+                align="stretch",
+                children=[
+                    ui.Button(
+                        "Sign in with Cisco Webex (OAuth / SSO)",
+                        variant="primary",
+                        size="sm",
+                        icon="login"
+                    ),
+                    ui.Divider(),
+                    ui.Text("Or connect via API Key or Service Account", variant="caption"),
+                    ui.Form(
+                        submit_label="Connect Cisco Webex",
+                        action=ui.Call("connect_webex"),
+                        children=[
+                            ui.Stack(
+                                direction="v",
+                                gap=2,
+                                align="stretch",
+                                children=[
+                                    ui.Stack(
+                                        direction="v",
+                                        gap=1,
+                                        align="stretch",
+                                        children=[
+                                            ui.Text("Authentication Method", variant="label"),
+                                            ui.Select(
+                                                param_name="auth_mode",
+                                                value="api_key",
+                                                options=[
+                                                    {"label": "API Key / Personal Access Token", "value": "api_key"},
+                                                    {"label": "OAuth 2.0 Bearer Token", "value": "oauth"},
+                                                    {"label": "Client Credentials (Service Account / Machine-to-Machine)", "value": "client_credentials"},
+                                                ]
+                                            ),
+                                        ]
+                                    ),
+                                    ui.Stack(
+                                        direction="v",
+                                        gap=1,
+                                        align="stretch",
+                                        children=[
+                                            ui.Text("Connection Label", variant="label"),
+                                            ui.Input(param_name="label", placeholder="e.g. Production Cisco Webex"),
+                                        ]
+                                    ),
+                                    ui.Stack(
+                                        direction="v",
+                                        gap=1,
+                                        align="stretch",
+                                        children=[
+                                            ui.Text("API Key / Access Token", variant="label"),
+                                            ui.Input(param_name="api_key", placeholder="Paste API Key, Bearer or Access Token"),
+                                        ]
+                                    ),
+                                ]
+                            )
+                        ]
+                    ),
+                ]
+            ),
             _help_modal(),
-            _settings_button()
+            ui.Spacer(),
+            _settings_button(),
         ]
     )
