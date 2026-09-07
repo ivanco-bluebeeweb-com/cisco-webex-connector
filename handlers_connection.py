@@ -63,7 +63,7 @@ async def connect_webex(params: s.ConnectWebexParams, ctx) -> ActionResult:
     })
     await _save_connections(ctx, connections)
 
-    return ActionResult.ok(
+    return ActionResult.success(
         data={"connection_id": conn_id, "label": label, "user": user_info.get("displayName")},
         summary=f"Successfully connected Cisco Webex as {user_info.get('displayName', label)}."
     )
@@ -89,7 +89,7 @@ async def list_connections(params: s.NoParams, ctx) -> ActionResult:
         }
         for c in connections
     ]
-    return ActionResult.ok(
+    return ActionResult.success(
         data={"connections": safe, "count": len(safe)},
         summary=f"Found {len(safe)} connected Cisco Webex account(s)."
     )
@@ -110,7 +110,7 @@ async def disconnect_webex(params: s.DisconnectWebexParams, ctx) -> ActionResult
     if len(new_conns) == len(connections):
         return ActionResult.error(f"Connection {params.connection_id} not found.")
     await _save_connections(ctx, new_conns)
-    return ActionResult.ok(
+    return ActionResult.success(
         data={"connection_id": params.connection_id},
         summary=f"Disconnected Cisco Webex account {params.connection_id}."
     )

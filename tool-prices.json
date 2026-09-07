@@ -1,17 +1,14 @@
 {
-  "pricing_model": "per_action",
-  "tool_prices": {
-    "connect_webex": 0,
-    "list_connections": 0,
-    "disconnect_webex": 0,
-    "list_meetings": 8,
-    "get_meeting": 8,
-    "create_meeting": 16,
-    "delete_meeting": 16,
-    "list_rooms": 8,
-    "create_room": 16,
-    "post_message": 16,
-    "list_recordings": 8,
-    "audit_webex_health": 40
-  }
+  "connect_webex": 0,
+  "list_connections": 0,
+  "disconnect_webex": 0,
+  "list_meetings": 1,
+  "get_meeting": 1,
+  "create_meeting": 2,
+  "delete_meeting": 2,
+  "list_rooms": 1,
+  "create_room": 2,
+  "post_message": 1,
+  "list_recordings": 1,
+  "audit_webex_health": 5
 }

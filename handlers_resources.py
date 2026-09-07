@@ -18,7 +18,7 @@ async def list_meetings(params: s.ListMeetingsParams, ctx) -> ActionResult:
     try:
         client = await _get_client(ctx, params.connection_id)
         meetings = await client.list_meetings(state=params.state, max_results=params.max_results)
-        return ActionResult.ok(
+        return ActionResult.success(
             data={"meetings": meetings, "count": len(meetings)},
             summary=f"Retrieved {len(meetings)} meeting(s) from Cisco Webex."
         )
@@ -38,7 +38,7 @@ async def get_meeting(params: s.GetMeetingParams, ctx) -> ActionResult:
     try:
         client = await _get_client(ctx, params.connection_id)
         meeting = await client.get_meeting(meeting_id=params.meeting_id)
-        return ActionResult.ok(
+        return ActionResult.success(
             data={"meeting": meeting},
             summary=f"Retrieved meeting: {meeting.get('title', params.meeting_id)}."
         )
@@ -64,7 +64,7 @@ async def create_meeting(params: s.CreateMeetingParams, ctx) -> ActionResult:
             password=params.password,
             invitees=params.invitees
         )
-        return ActionResult.ok(
+        return ActionResult.success(
             data={"meeting": meeting},
             summary=f"Scheduled Webex meeting '{params.title}' (ID: {meeting.get('id')})."
         )
@@ -85,7 +85,7 @@ async def delete_meeting(params: s.DeleteMeetingParams, ctx) -> ActionResult:
         client = await _get_client(ctx, params.connection_id)
         success = await client.delete_meeting(meeting_id=params.meeting_id)
         if success:
-            return ActionResult.ok(
+            return ActionResult.success(
                 data={"meeting_id": params.meeting_id},
                 summary=f"Deleted Webex meeting {params.meeting_id}."
             )
@@ -106,7 +106,7 @@ async def list_rooms(params: s.ListRoomsParams, ctx) -> ActionResult:
     try:
         client = await _get_client(ctx, params.connection_id)
         rooms = await client.list_rooms(room_type=params.room_type, max_results=params.max_results)
-        return ActionResult.ok(
+        return ActionResult.success(
             data={"rooms": rooms, "count": len(rooms)},
             summary=f"Retrieved {len(rooms)} Webex space(s)/room(s)."
         )
@@ -126,7 +126,7 @@ async def create_room(params: s.CreateRoomParams, ctx) -> ActionResult:
     try:
         client = await _get_client(ctx, params.connection_id)
         room = await client.create_room(title=params.title)
-        return ActionResult.ok(
+        return ActionResult.success(
             data={"room": room},
             summary=f"Created Webex space '{params.title}' (ID: {room.get('id')})."
         )
@@ -146,7 +146,7 @@ async def post_message(params: s.PostMessageParams, ctx) -> ActionResult:
     try:
         client = await _get_client(ctx, params.connection_id)
         msg = await client.post_message(room_id=params.room_id, text=params.text, markdown=params.markdown)
-        return ActionResult.ok(
+        return ActionResult.success(
             data={"message": msg},
             summary=f"Posted message to Webex space {params.room_id}."
         )
@@ -166,7 +166,7 @@ async def list_recordings(params: s.ListRecordingsParams, ctx) -> ActionResult:
     try:
         client = await _get_client(ctx, params.connection_id)
         recordings = await client.list_recordings(max_results=params.max_results)
-        return ActionResult.ok(
+        return ActionResult.success(
             data={"recordings": recordings, "count": len(recordings)},
             summary=f"Retrieved {len(recordings)} Webex recording(s)."
         )
@@ -188,7 +188,7 @@ async def audit_webex_health(params: s.AuditHealthParams, ctx) -> ActionResult:
         user = await client.get_me()
         meetings = await client.list_meetings(max_results=5)
         rooms = await client.list_rooms(max_results=5)
-        return ActionResult.ok(
+        return ActionResult.success(
             data={
                 "status": "healthy",
                 "user": user.get("displayName"),
