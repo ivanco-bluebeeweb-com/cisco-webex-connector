@@ -13,7 +13,7 @@ from handlers_connection import _get_client
     effects=[],
     data_model=s.ListMeetingsParams
 )
-async def list_meetings(params: s.ListMeetingsParams, ctx) -> ActionResult:
+async def list_meetings(ctx, params: s.ListMeetingsParams) -> ActionResult:
     """List Webex meetings."""
     try:
         client = await _get_client(ctx, params.connection_id)
@@ -33,7 +33,7 @@ async def list_meetings(params: s.ListMeetingsParams, ctx) -> ActionResult:
     effects=[],
     data_model=s.GetMeetingParams
 )
-async def get_meeting(params: s.GetMeetingParams, ctx) -> ActionResult:
+async def get_meeting(ctx, params: s.GetMeetingParams) -> ActionResult:
     """Get details of a specific Webex meeting."""
     try:
         client = await _get_client(ctx, params.connection_id)
@@ -53,7 +53,7 @@ async def get_meeting(params: s.GetMeetingParams, ctx) -> ActionResult:
     effects=[],
     data_model=s.CreateMeetingParams
 )
-async def create_meeting(params: s.CreateMeetingParams, ctx) -> ActionResult:
+async def create_meeting(ctx, params: s.CreateMeetingParams) -> ActionResult:
     """Schedule a new Webex meeting."""
     try:
         client = await _get_client(ctx, params.connection_id)
@@ -79,7 +79,7 @@ async def create_meeting(params: s.CreateMeetingParams, ctx) -> ActionResult:
     effects=[],
     data_model=s.DeleteMeetingParams
 )
-async def delete_meeting(params: s.DeleteMeetingParams, ctx) -> ActionResult:
+async def delete_meeting(ctx, params: s.DeleteMeetingParams) -> ActionResult:
     """Delete a Webex meeting."""
     try:
         client = await _get_client(ctx, params.connection_id)
@@ -101,7 +101,7 @@ async def delete_meeting(params: s.DeleteMeetingParams, ctx) -> ActionResult:
     effects=[],
     data_model=s.ListRoomsParams
 )
-async def list_rooms(params: s.ListRoomsParams, ctx) -> ActionResult:
+async def list_rooms(ctx, params: s.ListRoomsParams) -> ActionResult:
     """List Webex spaces/rooms."""
     try:
         client = await _get_client(ctx, params.connection_id)
@@ -121,7 +121,7 @@ async def list_rooms(params: s.ListRoomsParams, ctx) -> ActionResult:
     effects=[],
     data_model=s.CreateRoomParams
 )
-async def create_room(params: s.CreateRoomParams, ctx) -> ActionResult:
+async def create_room(ctx, params: s.CreateRoomParams) -> ActionResult:
     """Create a new Webex space/room."""
     try:
         client = await _get_client(ctx, params.connection_id)
@@ -141,7 +141,7 @@ async def create_room(params: s.CreateRoomParams, ctx) -> ActionResult:
     effects=[],
     data_model=s.PostMessageParams
 )
-async def post_message(params: s.PostMessageParams, ctx) -> ActionResult:
+async def post_message(ctx, params: s.PostMessageParams) -> ActionResult:
     """Post a message to a Webex space/room."""
     try:
         client = await _get_client(ctx, params.connection_id)
@@ -161,7 +161,7 @@ async def post_message(params: s.PostMessageParams, ctx) -> ActionResult:
     effects=[],
     data_model=s.ListRecordingsParams
 )
-async def list_recordings(params: s.ListRecordingsParams, ctx) -> ActionResult:
+async def list_recordings(ctx, params: s.ListRecordingsParams) -> ActionResult:
     """List Webex recordings."""
     try:
         client = await _get_client(ctx, params.connection_id)
@@ -181,7 +181,7 @@ async def list_recordings(params: s.ListRecordingsParams, ctx) -> ActionResult:
     effects=[],
     data_model=s.AuditHealthParams
 )
-async def audit_webex_health(params: s.AuditHealthParams, ctx) -> ActionResult:
+async def audit_webex_health(ctx, params: s.AuditHealthParams) -> ActionResult:
     """Audit Cisco Webex connectivity."""
     try:
         client = await _get_client(ctx, params.connection_id)

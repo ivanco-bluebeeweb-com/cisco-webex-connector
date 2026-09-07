@@ -41,7 +41,7 @@ async def _get_client(ctx, connection_id: str = "") -> WebexClient:
     effects=["create:connection"],
     data_model=s.ConnectWebexParams
 )
-async def connect_webex(params: s.ConnectWebexParams, ctx) -> ActionResult:
+async def connect_webex(ctx, params: s.ConnectWebexParams) -> ActionResult:
     """Connect a Cisco Webex account with Bearer Access Token."""
     label = params.label.strip() or "Cisco Webex Account"
     client = WebexClient(access_token=params.access_token)
@@ -76,7 +76,7 @@ async def connect_webex(params: s.ConnectWebexParams, ctx) -> ActionResult:
     effects=[],
     data_model=s.NoParams
 )
-async def list_connections(params: s.NoParams, ctx) -> ActionResult:
+async def list_connections(ctx, params: s.NoParams) -> ActionResult:
     """List connected Cisco Webex accounts."""
     connections = await _load_connections(ctx)
     safe = [
@@ -103,7 +103,7 @@ async def list_connections(params: s.NoParams, ctx) -> ActionResult:
     effects=["delete:connection"],
     data_model=s.DisconnectWebexParams
 )
-async def disconnect_webex(params: s.DisconnectWebexParams, ctx) -> ActionResult:
+async def disconnect_webex(ctx, params: s.DisconnectWebexParams) -> ActionResult:
     """Disconnect a Cisco Webex account."""
     connections = await _load_connections(ctx)
     new_conns = [c for c in connections if c.get("id") != params.connection_id]
