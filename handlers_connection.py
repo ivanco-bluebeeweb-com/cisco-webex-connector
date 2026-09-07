@@ -9,7 +9,7 @@ import schemas as s
 from webex_client import WebexClient
 
 async def _load_connections(ctx) -> List[Dict[str, Any]]:
-    raw = await ctx.store.get("connections")
+    raw = (await ctx.store.get("connections")) or []
     if not raw:
         return []
     try:
