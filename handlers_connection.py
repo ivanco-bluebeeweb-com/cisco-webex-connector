@@ -8,17 +8,37 @@ from app import ext, chat
 import schemas as s
 from webex_client import WebexClient
 
+def _parse_connections_doc(doc) -> List[Dict[str, Any]]:
+    if not doc:
+        return []
+    data = doc.data if hasattr(doc, "data") else doc
+    if isinstance(data, dict):
+        if "connections" in data and isinstance(data["connections"], list):
+            return data["connections"]
+        if "value" in data:
+            val = data["value"]
+            if isinstance(val, str):
+                try:
+                    return json.loads(val)
+                except Exception:
+                    return []
+            if isinstance(val, list):
+                return val
+    elif isinstance(data, str):
+        try:
+            return json.loads(data)
+        except Exception:
+            return []
+    elif isinstance(data, list):
+        return data
+    return []
+
 async def _load_connections(ctx) -> List[Dict[str, Any]]:
-    raw = (await ctx.store.get("connections")) or []
-    if not raw:
-        return []
-    try:
-        return json.loads(raw)
-    except Exception:
-        return []
+    raw = await ctx.store.get("connections")
+    return _parse_connections_doc(raw)
 
 async def _save_connections(ctx, connections: List[Dict[str, Any]]) -> None:
-    await ctx.store.set("connections", json.dumps(connections))
+    await ctx.store.set("connections", {"connections": connections})
 
 async def _get_client(ctx, connection_id: str = "") -> WebexClient:
     connections = await _load_connections(ctx)
