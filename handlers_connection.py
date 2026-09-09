@@ -8,37 +8,54 @@ from app import ext, chat
 import schemas as s
 from webex_client import WebexClient
 
-def _parse_connections_doc(doc) -> List[Dict[str, Any]]:
-    if not doc:
+SECRET_KEY = "webex_connections"
+
+def _parse_connections_doc(raw) -> List[Dict[str, Any]]:
+    if not raw:
         return []
-    data = doc.data if hasattr(doc, "data") else doc
-    if isinstance(data, dict):
-        if "connections" in data and isinstance(data["connections"], list):
-            return data["connections"]
-        if "value" in data:
-            val = data["value"]
-            if isinstance(val, str):
-                try:
-                    return json.loads(val)
-                except Exception:
-                    return []
+    if isinstance(raw, str):
+        try:
+            val = json.loads(raw)
+            if isinstance(val, dict) and "connections" in val:
+                return val["connections"]
             if isinstance(val, list):
                 return val
-    elif isinstance(data, str):
-        try:
-            return json.loads(data)
+            return []
         except Exception:
             return []
-    elif isinstance(data, list):
-        return data
+    if isinstance(raw, dict):
+        if "connections" in raw and isinstance(raw["connections"], list):
+            return raw["connections"]
+        return [raw]
+    if isinstance(raw, list):
+        return raw
     return []
 
 async def _load_connections(ctx) -> List[Dict[str, Any]]:
-    raw = await ctx.store.get("connections")
-    return _parse_connections_doc(raw)
+    try:
+        raw = await ctx.secrets.get(SECRET_KEY)
+        if raw:
+            return _parse_connections_doc(raw)
+    except Exception:
+        pass
+    try:
+        raw_store = await ctx.store.get("connections")
+        if raw_store:
+            data = raw_store.data if hasattr(raw_store, "data") else raw_store
+            return _parse_connections_doc(data)
+    except Exception:
+        pass
+    return []
 
 async def _save_connections(ctx, connections: List[Dict[str, Any]]) -> None:
-    await ctx.store.set("connections", {"connections": connections})
+    try:
+        await ctx.secrets.set(SECRET_KEY, json.dumps(connections))
+    except Exception:
+        pass
+    try:
+        await ctx.store.set("connections", {"connections": connections})
+    except Exception:
+        pass
 
 async def _get_client(ctx, connection_id: str = "") -> WebexClient:
     connections = await _load_connections(ctx)
@@ -53,6 +70,33 @@ async def _get_client(ctx, connection_id: str = "") -> WebexClient:
     return WebexClient(access_token=c["access_token"])
 
 @chat.function(
+    "list_connections",
+    "List connected Cisco Webex accounts without exposing credentials.",
+    action_type="read",
+    chain_callable=True,
+    event="cisco-webex-connector.list_connections",
+    effects=[],
+    data_model=s.NoParams
+)
+async def list_connections(ctx, params: s.NoParams) -> ActionResult:
+    """List Cisco Webex connections."""
+    connections = await _load_connections(ctx)
+    result = []
+    for c in connections:
+        token = c.get("access_token", "")
+        masked_token = f"***{token[-4:]}" if len(token) >= 4 else "***"
+        result.append({
+            "id": c.get("id"),
+            "label": c.get("label", "Cisco Webex"),
+            "status": "connected" if c.get("is_active", True) else "disconnected",
+            "masked_token": masked_token
+        })
+    return ActionResult.success(
+        data={"connections": result, "count": len(result)},
+        summary=f"Found {len(result)} Cisco Webex connection(s)."
+    )
+
+@chat.function(
     "connect_webex",
     "Connect your own Cisco Webex account by saving your Bearer Access Token.",
     action_type="write",
@@ -62,56 +106,29 @@ async def _get_client(ctx, connection_id: str = "") -> WebexClient:
     data_model=s.ConnectWebexParams
 )
 async def connect_webex(ctx, params: s.ConnectWebexParams) -> ActionResult:
-    """Connect a Cisco Webex account with Bearer Access Token."""
-    label = params.label.strip() or "Cisco Webex Account"
-    client = WebexClient(access_token=params.access_token)
+    """Connect a Cisco Webex account."""
+    label = params.label.strip() or "Cisco Webex"
+    access_token = params.access_token.strip()
+    
+    client = WebexClient(access_token=access_token)
     try:
-        user_info = await client.get_me()
-    except Exception as exc:
-        return ActionResult.error(f"Failed to authenticate with Cisco Webex: {exc}")
-
-    connections = await _load_connections(ctx)
+        await client.get_me()
+    except Exception as e:
+        return ActionResult.error(f"Failed to connect to Cisco Webex: {e}")
+        
     conn_id = f"webex_{uuid.uuid4().hex[:8]}"
-    masked = f"...{params.access_token[-4:]}" if len(params.access_token) > 4 else "***"
+    connections = await _load_connections(ctx)
     connections.append({
         "id": conn_id,
         "label": label,
-        "access_token": params.access_token,
-        "masked_key": masked,
-        "user_name": user_info.get("displayName", ""),
-        "email": user_info.get("emails", [""])[0] if user_info.get("emails") else ""
+        "access_token": access_token,
+        "is_active": True
     })
     await _save_connections(ctx, connections)
-
+    
     return ActionResult.success(
-        data={"connection_id": conn_id, "label": label, "user": user_info.get("displayName")},
-        summary=f"Successfully connected Cisco Webex as {user_info.get('displayName', label)}."
-    )
-
-@chat.function(
-    "list_connections",
-    "List connected Cisco Webex accounts without exposing credentials.",
-    action_type="read",
-    chain_callable=True,
-    effects=[],
-    data_model=s.NoParams
-)
-async def list_connections(ctx, params: s.NoParams) -> ActionResult:
-    """List connected Cisco Webex accounts."""
-    connections = await _load_connections(ctx)
-    safe = [
-        {
-            "id": c["id"],
-            "label": c.get("label", ""),
-            "masked_key": c.get("masked_key", "***"),
-            "user_name": c.get("user_name", ""),
-            "email": c.get("email", "")
-        }
-        for c in connections
-    ]
-    return ActionResult.success(
-        data={"connections": safe, "count": len(safe)},
-        summary=f"Found {len(safe)} connected Cisco Webex account(s)."
+        data={"id": conn_id, "label": label, "status": "connected"},
+        summary=f"Connected Cisco Webex account '{label}'."
     )
 
 @chat.function(
@@ -126,11 +143,12 @@ async def list_connections(ctx, params: s.NoParams) -> ActionResult:
 async def disconnect_webex(ctx, params: s.DisconnectWebexParams) -> ActionResult:
     """Disconnect a Cisco Webex account."""
     connections = await _load_connections(ctx)
-    new_conns = [c for c in connections if c.get("id") != params.connection_id]
-    if len(new_conns) == len(connections):
+    orig_len = len(connections)
+    connections = [c for c in connections if c.get("id") != params.connection_id]
+    if len(connections) == orig_len:
         return ActionResult.error(f"Connection {params.connection_id} not found.")
-    await _save_connections(ctx, new_conns)
+    await _save_connections(ctx, connections)
     return ActionResult.success(
-        data={"connection_id": params.connection_id},
+        data={"id": params.connection_id, "status": "disconnected"},
         summary=f"Disconnected Cisco Webex account {params.connection_id}."
     )

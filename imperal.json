@@ -810,5 +810,13 @@
       "post_message": 8,
       "list_recordings": 8
     }
-  }
+  },
+  "secrets": [
+    {
+      "name": "webex_connections",
+      "description": "Stored Cisco Webex connections",
+      "required": false,
+      "write_mode": "both"
+    }
+  ]
 }
