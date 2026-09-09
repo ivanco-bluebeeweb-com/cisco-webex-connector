@@ -186,17 +186,41 @@ async def audit_webex_health(ctx, params: s.AuditHealthParams) -> ActionResult:
     try:
         client = await _get_client(ctx, params.connection_id)
         user = await client.get_me()
-        meetings = await client.list_meetings(max_results=5)
-        rooms = await client.list_rooms(max_results=5)
+        meetings_count = 0
+        meetings_error = None
+        try:
+            meetings = await client.list_meetings(max_results=5)
+            meetings_count = len(meetings)
+        except Exception as m_exc:
+            meetings_error = str(m_exc)
+
+        rooms_count = 0
+        rooms_error = None
+        try:
+            rooms = await client.list_rooms(max_results=5)
+            rooms_count = len(rooms)
+        except Exception as r_exc:
+            rooms_error = str(r_exc)
+
+        is_bot = user.get("type") == "bot"
+        summary_msg = f"Cisco Webex is healthy: connected as {user.get('displayName')} ({user.get('type', 'user')})."
+        if rooms_error:
+            summary_msg += f" Spaces notice: {rooms_error}."
+        if meetings_error:
+            summary_msg += f" Meetings notice: {meetings_error}."
+
         return ActionResult.success(
             data={
                 "status": "healthy",
                 "user": user.get("displayName"),
+                "type": user.get("type"),
                 "email": user.get("emails", [""])[0] if user.get("emails") else "",
-                "sample_meetings_count": len(meetings),
-                "sample_rooms_count": len(rooms)
+                "sample_meetings_count": meetings_count,
+                "sample_rooms_count": rooms_count,
+                "meetings_error": meetings_error,
+                "rooms_error": rooms_error
             },
-            summary=f"Cisco Webex is healthy: connected as {user.get('displayName')} with access to meetings and spaces."
+            summary=summary_msg
         )
     except Exception as exc:
         return ActionResult.error(f"Health audit failed: {exc}")
